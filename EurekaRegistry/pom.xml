@@ -16,6 +16,13 @@
 	<description>Service Registry for Survey Management Project</description>
 	<properties>
 		<java.version>1.8</java.version>
+		<java.version>1.8</java.version>
+		<sonar.language>java</sonar.language>
+		<sonar.host.url>http://localhost:9000</sonar.host.url>
+		<sonar.projectKey>user</sonar.projectKey>
+		<sonar.projectName>user-local</sonar.projectName>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<spring-cloud.version>2020.0.2</spring-cloud.version>
 	</properties>
 	<dependencies>
@@ -43,11 +50,69 @@
 	</dependencyManagement>
 
 	<build>
+
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.6</version>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>default-report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.6.0.1398</version>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
+
+			<!-- Docker -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>1.4.10</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<!--<goal>build</goal>  -->
+							<!-- <goal>push</goal> -->
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>anitaregi/${project.artifactId}</repository>
+					<tag>${project.version}</tag>
+					<skipDockerInfo>true</skipDockerInfo>
+					<pullNewerImage>false</pullNewerImage>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 

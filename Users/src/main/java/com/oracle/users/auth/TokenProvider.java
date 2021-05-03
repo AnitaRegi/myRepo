@@ -20,13 +20,13 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class TokenProvider implements Serializable {
 
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -6371331658365634394L;
 
 	@Value("${jwt.token.validity}")
@@ -36,22 +36,32 @@ public class TokenProvider implements Serializable {
     public String SIGNING_KEY;
 
     @Value("${jwt.authorities.key}")
-    public String AUTHORITIES_KEY;
+    public String AUTHORITIES_KEY; //roles
 
     public String getUsernameFromToken(String token) {
+    	
+    	log.debug("Inside TokenProvider.getUsernameFromToken() ..." );
         return getClaimFromToken(token, Claims::getSubject);
     }
 
     public Date getExpirationDateFromToken(String token) {
+    	
+    	log.debug("Inside TokenProvider.getExpirationDateFromToken() ..." );
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+    	
+    	log.debug("Inside TokenProvider.getClaimFromToken() entered..." );
         final Claims claims = getAllClaimsFromToken(token);
+    	log.debug("Inside TokenProvider.getClaimFromToken() exited..." );
+
         return claimsResolver.apply(claims);
     }
 
     private Claims getAllClaimsFromToken(String token) {
+    	log.debug("Inside TokenProvider.getAllClaimsFromToken() ..." );
+
         return Jwts.parser()
                 .setSigningKey(SIGNING_KEY)
                 .parseClaimsJws(token)
@@ -59,15 +69,23 @@ public class TokenProvider implements Serializable {
     }
 
     private Boolean isTokenExpired(String token) {
+    	log.debug("Inside TokenProvider.isTokenExpired() entered..." );
+
         final Date expiration = getExpirationDateFromToken(token);
+    	log.debug("Inside TokenProvider.isTokenExpired() exited..." );
         return expiration.before(new Date());
     }
 
     public String generateToken(Authentication authentication) {
+    	log.debug("Inside TokenProvider.generateToken() entered..." );
+        System.out.println(" hi15 Authentication : "+ authentication.toString());
+
          String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+         System.out.println("hi16");
 
+         log.debug("Inside TokenProvider.generateToken() exited..." );
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
@@ -78,11 +96,18 @@ public class TokenProvider implements Serializable {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
+    	
+    	log.debug("Inside TokenProvider.validateToken() entered..." );
+
         final String username = getUsernameFromToken(token);
+    	
+        log.debug("Inside TokenProvider.validateToken() exited..." );
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     UsernamePasswordAuthenticationToken getAuthenticationToken(final String token, final Authentication existingAuth, final UserDetails userDetails) {
+
+    	log.debug("Inside TokenProvider.getAuthenticationToken() entered..." );
 
         final JwtParser jwtParser = Jwts.parser().setSigningKey(SIGNING_KEY);
 
@@ -94,6 +119,7 @@ public class TokenProvider implements Serializable {
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
+    	log.debug("Inside TokenProvider.getAuthenticationToken() exited..." );
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }

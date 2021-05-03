@@ -1,5 +1,7 @@
 package com.oracle.users.model.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,8 +14,13 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Role {
-    @Id
+public class Role implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
 

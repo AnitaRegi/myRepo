@@ -16,9 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SurveyQuestionDto {
 
-	private String surveyVersion;
-	private String qnName;
-	private Integer order;
+	private String qnText;
 	private String qnType;
 	private String optionOne;
 	private String optionTwo;
@@ -31,7 +29,7 @@ public class SurveyQuestionDto {
 		log.debug("SurveyQuestionDto.toEntity() Entered...");
 
 		Question surveyQn = new Question();
-		surveyQn.setQnName(this.qnName);
+		surveyQn.setQnName(this.qnText);
 		surveyQn.setQnType(this.qnType);
 		
 		AnswersOffered answer = new AnswersOffered();
@@ -40,7 +38,6 @@ public class SurveyQuestionDto {
 		answer.setOptionThree(this.optionThree);
 		answer.setOptionFour(this.optionFour);
 		answer.setOther(this.other);
-		
 		surveyQn.setAnswer(answer);
 		log.debug("SurveyQuestionDto.toEntity() Exited...");
 

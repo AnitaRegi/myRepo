@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,11 +22,14 @@ import com.oracle.surveys.model.UserResponseDto;
 @Component
 public class CustomUserDetailsService implements UserDetailsService {
 
+	@Value("${user.microservice.url}")
+	private String microUrl;
+	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		RestTemplate restTemplate = new RestTemplate();
 
-		ResponseEntity<UserResponseDto> userResponse = restTemplate.exchange("http://localhost:8080/users/{username}",
+		ResponseEntity<UserResponseDto> userResponse = restTemplate.exchange(microUrl,
 				HttpMethod.GET, null, UserResponseDto.class, username);
 		UserResponseDto userResponseDTO = userResponse.getBody();
 		if (null == userResponseDTO) {

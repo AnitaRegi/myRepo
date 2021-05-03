@@ -10,8 +10,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 @Component
+@Slf4j
 public class UnauthorizedEntryPoint implements AuthenticationEntryPoint, Serializable {
 
 
@@ -19,7 +22,11 @@ public class UnauthorizedEntryPoint implements AuthenticationEntryPoint, Seriali
 
 	@Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+    	
+		log.debug("Inside UnauthorizedEntryPoint.commence() ..." );
+        System.out.println("hihi");
+
+		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     }
 
 }

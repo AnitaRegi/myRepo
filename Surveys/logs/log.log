@@ -1,0 +1,104 @@
+11-04-2021 01:42:47.857  INFO 
+				c.o.s.SurveysApplication.logStarting - Starting SurveysApplication using Java 15.0.1 on DESKTOP-9B3R5JU with PID 15808 (D:\OracleRound2\Surveys\target\classes started by Anitta in D:\OracleRound2\Surveys)
+11-04-2021 01:42:47.861  INFO 
+				c.o.s.SurveysApplication.logStartupProfileInfo - No active profile set, falling back to default profiles: default
+11-04-2021 01:42:50.400  INFO 
+				o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+11-04-2021 01:42:50.522  INFO 
+				o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Finished Spring Data repository scanning in 118 ms. Found 2 JPA repository interfaces.
+11-04-2021 01:42:51.159  INFO 
+				o.s.b.w.e.t.TomcatWebServer.initialize - Tomcat initialized with port(s): 8080 (http)
+11-04-2021 01:42:51.163  INFO 
+				o.a.c.c.StandardService.log - Starting service [Tomcat]
+11-04-2021 01:42:51.164  INFO 
+				o.a.c.core.StandardEngine.log - Starting Servlet engine: [Apache Tomcat/9.0.44]
+11-04-2021 01:42:51.301  INFO 
+				o.a.c.c.C.[.[.[/].log - Initializing Spring embedded WebApplicationContext
+11-04-2021 01:42:51.303  INFO 
+				o.s.b.w.s.c.ServletWebServerApplicationContext.prepareWebApplicationContext - Root WebApplicationContext: initialization completed in 3435 ms
+11-04-2021 01:42:51.561  INFO 
+				o.h.j.i.util.LogHelper.logPersistenceUnitInformation - HHH000204: Processing PersistenceUnitInfo [name: default]
+11-04-2021 01:42:51.686  INFO 
+				c.z.h.HikariDataSource.getConnection - HikariPool-9 - Starting...
+11-04-2021 01:42:51.827  INFO 
+				c.z.h.HikariDataSource.getConnection - HikariPool-9 - Start completed.
+11-04-2021 01:42:51.831  INFO 
+				o.h.dialect.Dialect.<init> - HHH000400: Using dialect: org.hibernate.dialect.MySQL5Dialect
+11-04-2021 01:42:54.215  INFO 
+				o.h.e.t.j.p.i.JtaPlatformInitiator.initiateService - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+11-04-2021 01:42:54.217  INFO 
+				o.s.o.j.LocalContainerEntityManagerFactoryBean.buildNativeEntityManagerFactory - Initialized JPA EntityManagerFactory for persistence unit 'default'
+11-04-2021 01:42:54.255  INFO 
+				o.s.b.d.a.OptionalLiveReloadServer.startServer - LiveReload server is running on port 35729
+11-04-2021 01:42:54.601  WARN 
+				o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+11-04-2021 01:42:54.726  INFO 
+				o.s.s.c.ThreadPoolTaskExecutor.initialize - Initializing ExecutorService 'applicationTaskExecutor'
+11-04-2021 01:42:55.017  INFO 
+				o.s.b.w.e.t.TomcatWebServer.start - Tomcat started on port(s): 8080 (http) with context path ''
+11-04-2021 01:42:55.056  INFO 
+				c.o.s.SurveysApplication.logStarted - Started SurveysApplication in 8.855 seconds (JVM running for 1074.839)
+11-04-2021 01:42:55.069  INFO 
+				o.s.b.d.a.ConditionEvaluationDeltaLoggingListener.onApplicationEvent - Condition evaluation unchanged
+11-04-2021 01:43:58.179  INFO 
+				o.s.s.c.ThreadPoolTaskExecutor.shutdown - Shutting down ExecutorService 'applicationTaskExecutor'
+11-04-2021 01:43:58.182  INFO 
+				o.s.o.j.LocalContainerEntityManagerFactoryBean.destroy - Closing JPA EntityManagerFactory for persistence unit 'default'
+11-04-2021 01:43:58.183  INFO 
+				o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl.perform - HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+11-04-2021 01:43:58.666  INFO 
+				c.z.h.HikariDataSource.close - HikariPool-9 - Shutdown initiated...
+11-04-2021 01:43:58.696  INFO 
+				c.z.h.HikariDataSource.close - HikariPool-9 - Shutdown completed.
+11-04-2021 01:43:59.529  INFO 
+				c.o.s.SurveysApplication.logStarting - Starting SurveysApplication using Java 15.0.1 on DESKTOP-9B3R5JU with PID 15808 (D:\OracleRound2\Surveys\target\classes started by Anitta in D:\OracleRound2\Surveys)
+11-04-2021 01:43:59.533  INFO 
+				c.o.s.SurveysApplication.logStartupProfileInfo - No active profile set, falling back to default profiles: default
+11-04-2021 01:44:01.737  INFO 
+				o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+11-04-2021 01:44:02.011  INFO 
+				o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Finished Spring Data repository scanning in 270 ms. Found 2 JPA repository interfaces.
+11-04-2021 01:44:02.848  INFO 
+				o.s.b.w.e.t.TomcatWebServer.initialize - Tomcat initialized with port(s): 8080 (http)
+11-04-2021 01:44:02.860  INFO 
+				o.a.c.c.StandardService.log - Starting service [Tomcat]
+11-04-2021 01:44:02.861  INFO 
+				o.a.c.core.StandardEngine.log - Starting Servlet engine: [Apache Tomcat/9.0.44]
+11-04-2021 01:44:03.174  INFO 
+				o.a.c.c.C.[.[.[/].log - Initializing Spring embedded WebApplicationContext
+11-04-2021 01:44:03.175  INFO 
+				o.s.b.w.s.c.ServletWebServerApplicationContext.prepareWebApplicationContext - Root WebApplicationContext: initialization completed in 3631 ms
+11-04-2021 01:44:03.572  INFO 
+				o.h.j.i.util.LogHelper.logPersistenceUnitInformation - HHH000204: Processing PersistenceUnitInfo [name: default]
+11-04-2021 01:44:03.669  INFO 
+				c.z.h.HikariDataSource.getConnection - HikariPool-10 - Starting...
+11-04-2021 01:44:03.883  INFO 
+				c.z.h.HikariDataSource.getConnection - HikariPool-10 - Start completed.
+11-04-2021 01:44:03.884  INFO 
+				o.h.dialect.Dialect.<init> - HHH000400: Using dialect: org.hibernate.dialect.MySQL5Dialect
+11-04-2021 01:44:06.133  INFO 
+				o.h.e.t.j.p.i.JtaPlatformInitiator.initiateService - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+11-04-2021 01:44:06.135  INFO 
+				o.s.o.j.LocalContainerEntityManagerFactoryBean.buildNativeEntityManagerFactory - Initialized JPA EntityManagerFactory for persistence unit 'default'
+11-04-2021 01:44:06.182  INFO 
+				o.s.b.d.a.OptionalLiveReloadServer.startServer - LiveReload server is running on port 35729
+11-04-2021 01:44:06.494  WARN 
+				o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+11-04-2021 01:44:06.728  INFO 
+				o.s.s.c.ThreadPoolTaskExecutor.initialize - Initializing ExecutorService 'applicationTaskExecutor'
+11-04-2021 01:44:07.143  INFO 
+				o.s.b.w.e.t.TomcatWebServer.start - Tomcat started on port(s): 8080 (http) with context path ''
+11-04-2021 01:44:07.225  INFO 
+				c.o.s.SurveysApplication.logStarted - Started SurveysApplication in 8.085 seconds (JVM running for 1147.009)
+11-04-2021 01:44:07.233  INFO 
+				o.s.b.d.a.ConditionEvaluationDeltaLoggingListener.onApplicationEvent - Condition evaluation unchanged
+11-04-2021 01:44:38.773  INFO 
+				o.s.s.c.ThreadPoolTaskExecutor.shutdown - Shutting down ExecutorService 'applicationTaskExecutor'
+11-04-2021 01:44:38.777  INFO 
+				o.s.o.j.LocalContainerEntityManagerFactoryBean.destroy - Closing JPA EntityManagerFactory for persistence unit 'default'
+11-04-2021 01:44:38.778  INFO 
+				o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl.perform - HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+11-04-2021 01:44:40.150  INFO 
+				c.z.h.HikariDataSource.close - HikariPool-10 - Shutdown initiated...
+11-04-2021 01:44:40.178  INFO 
+				c.z.h.HikariDataSource.close - HikariPool-10 - Shutdown completed.

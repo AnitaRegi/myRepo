@@ -1,11 +1,9 @@
 package com.oracle.surveys.web;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +17,9 @@ import com.oracle.surveys.model.SurveyQuestionDto;
 import com.oracle.surveys.model.entity.Question;
 import com.oracle.surveys.model.entity.SurveyQuestion;
 import com.oracle.surveys.service.SurveyQuestionService;
+import com.oracle.surveys.validation.service.SurveyQuestionValidator;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -37,13 +37,19 @@ public class SurveyQuestionsController {
 	 * @param surveyQnRequest Contains fields to create the SurveyQuestion.
 	 * @return surveyQuestion SurveyQuestion details.
 	 */
-	@PostMapping("/surveys/{surveyId}/questions")
-	public ResponseEntity<SurveyQuestion> createSurveyQuestion(@PathVariable Long surveyId,
+	@ApiOperation(value = "Creates a survey question for surveyId and version.")
+	@PostMapping("/surveys/{surveyId}/{version}/questions")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<SurveyQuestion> createSurveyQuestion(@PathVariable Long surveyId, @PathVariable Long version,
 			@RequestBody SurveyQuestionDto surveyQnRequest) {
 
-		log.info("Initiating survey qn creation for surveyId {} version {}....", surveyId,
-				surveyQnRequest.getSurveyVersion());
-		SurveyQuestion surveyQuestion = surveyQnService.create(surveyId, surveyQnRequest);
+		log.info("Initiating survey qn creation for surveyId {} version {}....", surveyId, version);
+
+		SurveyQuestionValidator.validateSurveyId(surveyId);
+		SurveyQuestionValidator.validateVersion(version);
+
+		SurveyQuestion surveyQuestion = surveyQnService.create(surveyId, version, surveyQnRequest);
+
 		log.info("SurveyQuestion created Successfully....");
 
 		return new ResponseEntity<SurveyQuestion>(surveyQuestion, HttpStatus.CREATED);
@@ -58,12 +64,20 @@ public class SurveyQuestionsController {
 	 * @param surveyQnRequest Contains fields with values to update the survey.
 	 * @return surveyQuestion Updated survey details.
 	 */
-	@PutMapping("/surveys/{surveyId}/questions/{questionId}")
-	public ResponseEntity<SurveyQuestion> updateSurveyQuestion(@PathVariable Long surveyId,
+	@ApiOperation(value = "Updates the fields of a surveyQuestion.")
+	@PutMapping("/surveys/{surveyId}/{version}/questions/{questionId}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<SurveyQuestion> updateSurveyQuestion(@PathVariable Long surveyId, @PathVariable Long version,
 			@PathVariable Long questionId, @RequestBody SurveyQuestionDto surveyQnRequest) {
 
 		log.info("Updating surveyQuestion {}....", questionId);
-		SurveyQuestion surveyQuestion = surveyQnService.update(surveyQnRequest, surveyId, questionId);
+
+		SurveyQuestionValidator.validateSurveyId(surveyId);
+		SurveyQuestionValidator.validateVersion(version);
+		SurveyQuestionValidator.validateQuestionId(questionId);
+
+		SurveyQuestion surveyQuestion = surveyQnService.update(surveyQnRequest, surveyId, version, questionId);
+
 		log.info("surveyQuestion updated Successfully....");
 
 		return new ResponseEntity<SurveyQuestion>(surveyQuestion, HttpStatus.ACCEPTED);
@@ -77,47 +91,22 @@ public class SurveyQuestionsController {
 	 * @param surveyRequest Contains fields with values to update the survey.
 	 * @return Survey Updated survey details created along with surveyId.
 	 */
-	@PatchMapping("/surveys/{surveyId}/questions/{questionId}")
-	public ResponseEntity<SurveyQuestion> patchUpdateSurvey(@PathVariable Long surveyId, @PathVariable Long questionId,
-			@RequestBody SurveyQuestionDto surveyQnRequest) {
+	@ApiOperation(value = "Selectively updates the fields of a surveyQuestion.")
+	@PatchMapping("/surveys/{surveyId}/{version}/questions/{questionId}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<SurveyQuestion> patchUpdateSurvey(@PathVariable Long surveyId, @PathVariable Long version,
+			@PathVariable Long questionId, @RequestBody SurveyQuestionDto surveyQnRequest) {
 		log.info("Updating surveyQuestion {}....", surveyId);
-		SurveyQuestion surveyQuestion = surveyQnService.patchUpdate(surveyQnRequest, surveyId, questionId);
+
+		SurveyQuestionValidator.validateSurveyId(surveyId);
+		SurveyQuestionValidator.validateVersion(version);
+		SurveyQuestionValidator.validateQuestionId(questionId);
+
+		SurveyQuestion surveyQuestion = surveyQnService.patchUpdate(surveyQnRequest, surveyId, version, questionId);
+
 		log.info("surveyQuestion updated Successfully....");
+
 		return new ResponseEntity<SurveyQuestion>(surveyQuestion, HttpStatus.ACCEPTED);
-
-	}
-
-	/**
-	 * Returns all surveysQuestions.
-	 * 
-	 * @return List of SurveyQuestion.
-	 */
-	@GetMapping("/surveys/questions")
-	public ResponseEntity<List<SurveyQuestion>> findAllQuestions() {
-
-		log.info("Fetching all questions....");
-		List<SurveyQuestion> surveys = surveyQnService.findAll();
-		log.info("Sucessfully fetched all questions....");
-
-		return new ResponseEntity<List<SurveyQuestion>>(surveys, HttpStatus.OK);
-
-	}
-
-	/**
-	 * Returns all questions of the given survey and version.
-	 * 
-	 * @param surveyId
-	 * @param version
-	 * @return
-	 */
-	@GetMapping("/surveys/{surveyId}/{version}/questions")
-	public ResponseEntity<SurveyQuestion> findQuestionsById(@PathVariable Long surveyId, @PathVariable String version) {
-
-		log.info("Fetching all questions of survey {}- {}....", surveyId, version);
-		SurveyQuestion surveys = surveyQnService.findById(surveyId, version);
-		log.info("Successfully fetched all survey questions....");
-
-		return new ResponseEntity<SurveyQuestion>(surveys, HttpStatus.OK);
 
 	}
 
@@ -128,36 +117,54 @@ public class SurveyQuestionsController {
 	 * @param version
 	 * @param questionId
 	 */
+	@ApiOperation(value = "Gets the surveyQuestion of the specified questionId.")
 	@GetMapping("/surveys/{surveyId}/{version}/questions/{questionId}")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Question> findByQuestionId(@PathVariable Long surveyId, @PathVariable String version,
+	public ResponseEntity<Question> findByQuestionId(@PathVariable Long surveyId, @PathVariable Long version,
 			@PathVariable Long questionId) {
 
 		log.info("Retrieving question {} from survey {}- {}....", questionId, surveyId, version);
 
-		Question question = surveyQnService.findByQuestionId(surveyId, version, questionId);
+		SurveyQuestionValidator.validateSurveyId(surveyId);
+		SurveyQuestionValidator.validateVersion(version);
+		SurveyQuestionValidator.validateQuestionId(questionId);
+
+		Question question = surveyQnService.findById(surveyId, version, questionId);
+
 		log.info("Question fetched Successfully....");
+
 		return new ResponseEntity<Question>(question, HttpStatus.OK);
 
 	}
 
+
 	/**
-	 * Deletes the surveyQuestion of the specified id.
+	 * Returns all questions of the given survey and version.
 	 * 
 	 * @param surveyId
+	 * 
 	 * @param version
-	 * @param questionId
+	 * 
+	 * @return
 	 */
-	@DeleteMapping("/surveys/{surveyId}/{version}/questions/{questionId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteSurvey(@PathVariable Long surveyId, @PathVariable String version, @PathVariable Long questionId) {
+	@ApiOperation(value = "Returns all questions of the given survey and version.")
 
-		log.info("Deleting question from survey {}- {}....", surveyId, version);
+	@GetMapping("/surveys/{surveyId}/{version}/questions")
+	public ResponseEntity<SurveyQuestion> findQuestionsById(@PathVariable Long surveyId, @PathVariable Long version) {
 
-		surveyQnService.delete(surveyId, version, questionId);
+		log.info("Fetching all questions of survey {}- {}....", surveyId, version);
 
-		log.info("Survey deleted Successfully....");
+		SurveyQuestionValidator.validateSurveyId(surveyId);
+		SurveyQuestionValidator.validateVersion(version);
+
+		SurveyQuestion surveys = surveyQnService.findAllQuestionBySurvey(surveyId, version);
+
+		log.info("Successfully fetched all survey questions....");
+
+		return new ResponseEntity<SurveyQuestion>(surveys, HttpStatus.OK);
 
 	}
+
+
 
 }

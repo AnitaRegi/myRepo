@@ -1,10 +1,8 @@
 package com.oracle.surveys.service.impl;
 
-import java.util.List;
+import java.util.Comparator;
 import java.util.Optional;
 
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,14 +10,14 @@ import org.springframework.stereotype.Service;
 import com.oracle.surveys.constants.ErrorCodes;
 import com.oracle.surveys.constants.ErrorMessages;
 import com.oracle.surveys.exception.SurveyException;
-import com.oracle.surveys.model.SurveyPk;
 import com.oracle.surveys.model.SurveyQuestionDto;
+import com.oracle.surveys.model.SurveyVersionPk;
+import com.oracle.surveys.model.entity.AnswersOffered;
 import com.oracle.surveys.model.entity.Question;
-import com.oracle.surveys.model.entity.Survey;
 import com.oracle.surveys.model.entity.SurveyQuestion;
-import com.oracle.surveys.repo.QuestionRepository;
+import com.oracle.surveys.model.entity.SurveyVersion;
 import com.oracle.surveys.repo.SurveyQuestionRepository;
-import com.oracle.surveys.repo.SurveyRepository;
+import com.oracle.surveys.repo.SurveyVersionRepository;
 import com.oracle.surveys.service.SurveyQuestionService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,141 +27,153 @@ import lombok.extern.slf4j.Slf4j;
 public class SurveyQuestionsServiceImpl implements SurveyQuestionService {
 
 	@Autowired
-	SurveyRepository surveyRepo;
-	@Autowired
-	QuestionRepository qnRepo;
-	@Autowired
-	SurveyQuestionRepository sqnRepo;
+	SurveyQuestionRepository surveyQnRepo;
 
+	@Autowired
+	SurveyVersionRepository surveyVersionRepo;
+
+	/**
+	 * Adds questions to the specified survey version.
+	 */
 	@Override
-	public SurveyQuestion create(Long surveyId, SurveyQuestionDto request) {
+	public SurveyQuestion create(Long surveyId, Long version, SurveyQuestionDto request) {
 
 		log.debug("SurveyQuestionsServiceImpl.create() Entered...");
 
-		SurveyPk id = new SurveyPk(surveyId, request.getSurveyVersion());
-		Optional<Survey> surveyOpt = surveyRepo.findBySurveyIdAndVersion(surveyId, request.getSurveyVersion());
+		Optional<SurveyVersion> surveyVersionOpt = surveyVersionRepo.findBySurveyIdAndVersion(surveyId, version);
 
-		surveyOpt.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEY_DOESNT_EXIST.getValue(),
-				ErrorMessages.SURVEY_DOESNT_EXIST.getValue(), HttpStatus.BAD_REQUEST));
+		surveyVersionOpt.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEY_VERSION_DOESNT_EXIST.getValue(),
+				ErrorMessages.SURVEY_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
 
-		Optional<SurveyQuestion> surveyQnOpt = sqnRepo.findById(id);
-		SurveyQuestion sqn = surveyQnOpt.orElse(new SurveyQuestion(id));
+		SurveyQuestion surveyQuestion = surveyQnRepo.findById(new SurveyVersionPk(surveyId, version))
+				.orElse(new SurveyQuestion(surveyId, version));
 		Question question = request.toEntity();
-		sqn.addQuestions(question);
+
+		Long order = surveyQuestion.getQuestion().stream().max(Comparator.comparing(Question::getQnOrder))
+				.orElse(question).getQnOrder();
+
+		question.setQnOrder(order == null ? 1 : order + 1);
+		question.setSurveyQuestion(surveyQuestion);
+
+		surveyQuestion.addQuestions(question);
 
 		log.debug("SurveyQuestionsServiceImpl.create() Exited...");
 
-		return sqnRepo.save(sqn);
+		return surveyQnRepo.save(surveyQuestion);
 	}
 
 	@Override
-	public SurveyQuestion update(SurveyQuestionDto request, Long surveyId, Long questionId) {
+	public SurveyQuestion update(SurveyQuestionDto request, Long surveyId, Long version, Long questionId) {
 
 		log.debug("SurveyQuestionsServiceImpl.update() Entered...");
-		
 
-		SurveyQuestion sqn = findById(surveyId, request.getSurveyVersion());
+		Optional<SurveyQuestion> surveyQnOpt = surveyQnRepo.findById(new SurveyVersionPk(surveyId, version));
 
-		Question qn = sqn.getQuestion().stream().filter(obj -> obj.getQuestionId().equals(questionId)).findFirst()
-				.get();
+		SurveyQuestion sqn = surveyQnOpt
+				.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
+						ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
 
-		qn.setQnName(request.getQnName());
+		Question qn = sqn.getQuestion().stream().filter(obj -> obj.getQuestionId().equals(questionId)).findAny().get();
+
+		qn.setQnName(request.getQnText());
 		qn.setQnType(request.getQnType());
-		qn.getAnswer().setOptionOne(request.getOptionOne());
-		qn.getAnswer().setOptionTwo(request.getOptionTwo());
-		qn.getAnswer().setOptionThree(request.getOptionThree());
-		qn.getAnswer().setOptionFour(request.getOptionFour());
-		qn.getAnswer().setOther(request.getOther());
+		AnswersOffered answer = null != qn.getAnswer() ? qn.getAnswer() : new AnswersOffered();
+		answer.setOptionOne(request.getOptionOne());
+		answer.setOptionTwo(request.getOptionTwo());
+		answer.setOptionThree(request.getOptionThree());
+		answer.setOptionFour(request.getOptionFour());
+		answer.setOther(request.getOther());
+
+		qn.setAnswer(answer);
+		qn.setSurveyQuestion(sqn);
 		sqn.addQuestions(qn);
 		log.debug("SurveyQuestionsServiceImpl.update() Exited...");
 
-		return sqnRepo.save(sqn);
+		return surveyQnRepo.save(sqn);
 	}
 
 	@Override
-	public SurveyQuestion patchUpdate(SurveyQuestionDto request, Long surveyId, Long questionId) {
-
-		log.debug("SurveyQuestionsServiceImpl.patchUpdate() Entered...");
-		SurveyQuestion sqn = findById(surveyId, request.getSurveyVersion());
-
-		Question surveyQn = sqn.getQuestion().stream().filter(obj -> obj.getQuestionId().equals(questionId)).findFirst()
-				.get();
-
-		if (StringUtils.isNotBlank(request.getQnName())) {
-			surveyQn.setQnName(request.getQnName());
-		}
-		if (StringUtils.isNotBlank(request.getQnType())) {
-			surveyQn.setQnType(request.getQnType());
-		}
-		/*if (ObjectUtils.isNotEmpty(request.getOptionOne())) {
-			surveyQn.getAnswer().setOptionOne(request.getOptionOne());
-		}
-		if (ObjectUtils.isNotEmpty(request.getOptionTwo())) {
-			surveyQn.getAnswer().setOptionTwo(request.getOptionTwo());
-		}*/
-		if (StringUtils.isNotBlank(request.getOptionThree())) {
-			surveyQn.getAnswer().setOptionThree(request.getOptionThree());
-		}
-		if (StringUtils.isNotBlank(request.getOptionFour())) {
-			surveyQn.getAnswer().setOptionFour(request.getOptionFour());
-		}
-		if (StringUtils.isNotBlank(request.getOther())) {
-			surveyQn.getAnswer().setOther(request.getOther());
-		}
-
-		log.debug("SurveyQuestionsServiceImpl.patchUpdate() Exited...");
-		sqn.addQuestions(surveyQn);
-
-		return sqnRepo.save(sqn);
-	}
-
-	@Override
-	public SurveyQuestion findById(Long surveyId, String version) {
+	public Question findById(Long surveyId, Long version, Long questionId) {
 
 		log.debug("SurveyQuestionsServiceImpl.findById() Entered...");
-		
-		SurveyPk id = new SurveyPk(surveyId, version);
-		Optional<SurveyQuestion> surveyOpt = sqnRepo.findById(id);
 
-		SurveyQuestion surveyQuestion = surveyOpt.map(obj -> {
-			return surveyOpt.get();
-		}).orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
-				ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
+		Optional<SurveyVersion> surveyVersionOpt = surveyVersionRepo.findBySurveyIdAndVersion(surveyId, version);
+		surveyVersionOpt.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEY_VERSION_DOESNT_EXIST.getValue(),
+				ErrorMessages.SURVEY_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
+
+		SurveyQuestion surveyQn = findAllQuestionBySurvey(surveyId, version);
+
+		Question question = surveyQn.getQuestion().stream().filter(obj -> obj.getQuestionId().equals(questionId))
+				.findAny().orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
+						ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
 
 		log.debug("SurveyQuestionsServiceImpl.findById() Exited...");
 
-		return surveyQuestion;
+		return question;
 	}
 
 	@Override
-	public List<SurveyQuestion> findAll() {
+	public SurveyQuestion findAllQuestionBySurvey(Long surveyId, Long version) {
 
-		log.debug("Inside SurveyQuestionsServiceImpl.findAll()...");
-		return (List<SurveyQuestion>) sqnRepo.findAll();
+		log.debug("Inside SurveyQuestionsServiceImpl.findAllQuestionBySurvey()...");
 
-	}
-	
-	@Override
-	public Question findByQuestionId(Long surveyId, String version, Long questionId) {
-		log.debug("SurveyQuestionsServiceImpl.findByQuestionId() Entered...");
+		return surveyQnRepo.findById(new SurveyVersionPk(surveyId, version))
+				.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
+						ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
 
-		SurveyQuestion sqn = findById(surveyId, version);
-		Optional<Question> questionOpt = sqn.getQuestion().stream().filter(qn->qn.getQuestionId().equals(questionId)).findFirst();
-		log.debug("SurveyQuestionsServiceImpl.findByQuestionId() Entered...");
-
-		return questionOpt.map(obj -> {
-			return questionOpt.get();
-		}).orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
-				ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
 	}
 
 	@Override
-	public void delete(Long surveyId, String version, Long questionId ) {
+	public SurveyQuestion patchUpdate(SurveyQuestionDto request, Long surveyId, Long version, Long questionId) {
+		log.debug("Inside SurveyQuestionsServiceImpl.patchUpdate() entered...");
 
-		log.debug("Inside SurveyQuestionsServiceImpl.delete()...");
-		SurveyQuestion sqn = findById(surveyId, version);
-		sqn.removeQuestions(questionId);
-		log.debug("Successfully deleted surveyquestion...");
+		Optional<SurveyQuestion> surveyQnOpt = surveyQnRepo.findById(new SurveyVersionPk(surveyId, version));
+
+		SurveyQuestion sqn = surveyQnOpt
+				.orElseThrow(() -> new SurveyException(ErrorCodes.SURVEYQN_DOESNT_EXIST.getValue(),
+						ErrorMessages.SURVEYQN_DOESNT_EXIST.getValue(), HttpStatus.NOT_FOUND));
+
+		Question qn = sqn.getQuestion().stream().filter(obj -> obj.getQuestionId().equals(questionId)).findAny().get();
+
+		if (null != request.getQnType()) {
+			qn.setQnType(request.getQnType());
+		}
+		if (null != request.getQnText()) {
+			qn.setQnName(request.getQnText());
+		}
+
+		if (isAnyAnswerFieldPresent(request)) {
+			if (null == qn.getAnswer()) {
+				qn.setAnswer(new AnswersOffered());
+			}
+			if (null != request.getOptionOne()) {
+				qn.getAnswer().setOptionOne(request.getOptionOne());
+			}
+			if (null != request.getOptionTwo()) {
+				qn.getAnswer().setOptionTwo(request.getOptionTwo());
+			}
+			if (null != request.getOptionThree()) {
+				qn.getAnswer().setOptionThree(request.getOptionThree());
+			}
+			if (null != request.getOptionFour()) {
+				qn.getAnswer().setOptionFour(request.getOptionFour());
+			}
+			if (null != request.getOther()) {
+				qn.getAnswer().setOther(request.getOther());
+			}
+		}
+		log.debug("Inside SurveyQuestionsServiceImpl.patchUpdate() exited...");
+
+		return surveyQnRepo.save(sqn);
+
+	};
+
+	private Boolean isAnyAnswerFieldPresent(SurveyQuestionDto request) {
+		if (null != request.getOptionOne() || null != request.getOptionTwo() || null != request.getOptionThree()
+				|| null != request.getOptionFour() || null != request.getOther()) {
+			return true;
+		}
+		return false;
 	}
 
 }

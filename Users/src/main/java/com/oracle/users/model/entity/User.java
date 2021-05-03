@@ -1,5 +1,6 @@
 package com.oracle.users.model.entity;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,7 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,17 +28,22 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class User {
+public class User implements Serializable{
 
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
 
     @Column
     private String username;
-
+	
     @Column
-    @JsonIgnore
+	@JsonInclude(Include. NON_NULL)
     private String password;
 
     @Column
